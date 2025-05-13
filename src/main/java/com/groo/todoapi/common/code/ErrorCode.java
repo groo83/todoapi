@@ -9,6 +9,7 @@ public enum ErrorCode {
 
     TODO_NOT_FOUND(404, "C001", "Todo 정보가 없습니다."),
     USER_NOT_FOUND(404, "C002", "사용자를 찾을 수 없습니다."),
+    TODO_ACCESS_DENIED(403, "C003", "해당 Todo에 대한 접근 권한이 없습니다."),
     EXIST_EMAIL(409, "M001", "이미 등록된 이메일입니다."),
     INVALID_USER(401, "M002", "아이디와 비밀번호가 일치하지 않습니다"),
     INVALID_NICKNAME(401, "M003", "잘못된 닉네임입니다. (특수문자 제외, 3자 이상 20자 이하)"),
