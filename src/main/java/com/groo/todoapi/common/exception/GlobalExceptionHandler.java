@@ -20,5 +20,9 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(e.getErrorCode()));
     }
 
-
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException e) {
+        return ResponseEntity.status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode()));
+    }
 }
