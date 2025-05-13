@@ -1,8 +1,6 @@
 package com.groo.todoapi.domain.todo.api;
 
-import com.groo.todoapi.common.code.ErrorCode;
 import com.groo.todoapi.common.dto.DataResponse;
-import com.groo.todoapi.common.exception.UnauthorizedException;
 import com.groo.todoapi.domain.todo.dto.TodoReqDto;
 import com.groo.todoapi.domain.todo.dto.TodoResDto;
 import com.groo.todoapi.domain.todo.dto.TodoUpdateReqDto;
@@ -68,9 +66,6 @@ public class TodoController {
     private String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
-        }
         return auth.getName();
     }
 }
