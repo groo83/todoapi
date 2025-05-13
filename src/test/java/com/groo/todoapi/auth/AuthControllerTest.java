@@ -2,19 +2,25 @@ package com.groo.todoapi.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groo.todoapi.domain.auth.dto.UserLoginReqDto;
+import com.groo.todoapi.domain.user.dto.UserRegReqDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 public class AuthControllerTest {
 
     @Autowired
@@ -23,48 +29,35 @@ public class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @LocalServerPort
-    int randomServerPort;
-
-    private final String domain = "http://localhost:";
-
-/*    @Test
-    public void signupWithJsonData() throws Exception {
-        MemberRegReqDto reqDto = new MemberRegReqDto("jy@google.com", "jy", "password");
-
-        mockMvc.perform(post("/api/auth/signup")
+    @BeforeEach
+    void setUp() throws Exception {
+        // 테스트용 사용자 생성
+        UserRegReqDto signupDto = new UserRegReqDto("testuser@test.com", "todouser", "1234");
+        mockMvc.perform(post("/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(reqDto)))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data.email").value("jy@google.com"))
-                .andExpect(jsonPath("$.data.nickname").value("jy"));
+                        .content(objectMapper.writeValueAsString(signupDto)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    public void signupWithJsonDataExistEmail() throws Exception {
-        MemberRegReqDto reqDto = new MemberRegReqDto("test", "groo", "1");
+    void singinWithUserRole() throws Exception {
+        UserLoginReqDto reqDto = new UserLoginReqDto("testuser@test.com", "1234");
 
-        mockMvc.perform(post("/api/auth/signup")
+        mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("이미 이메일이 존재합니다."));
-    }*/
-
-    @Test
-    void singinWithUserRole() {
-        String url = domain + randomServerPort + "/users/login";
-        UserLoginReqDto reqDto = new UserLoginReqDto("test@gmail.com", "1234");
-
-        ResponseEntity<Object> response = restTemplate
-                .postForEntity(url, reqDto, Object.class);
-
-        // 응답 검증
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.accessToken").exists());
     }
 
+    @Test
+    void login_fail_userNotFound() throws Exception {
+        UserLoginReqDto reqDto = new UserLoginReqDto("nonexistent@gmail.com", "1234");
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("C002"));
+    }
 }

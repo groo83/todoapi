@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 public class UserControllerTest {
 
     @Autowired
@@ -30,14 +32,6 @@ public class UserControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @LocalServerPort
-    int randomServerPort;
-
-    private final String domain = "http://localhost:";
 
     @Test
     public void signupWithJsonData() throws Exception {
@@ -59,8 +53,17 @@ public class UserControllerTest {
         mockMvc.perform(post("/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.data.email").value("test@gmail.com"))
+                .andExpect(jsonPath("$.data.nickname").value("test"));
+
+
+        mockMvc.perform(post("/users/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDto)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("이미 이메일이 존재합니다."));
+                .andExpect(jsonPath("$.message").value("이미 등록된 이메일입니다."));
     }
 
     @Test
