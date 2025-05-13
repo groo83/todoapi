@@ -30,6 +30,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.USER_NOT_FOUND));
     }
 
+    @Transactional
     public UserResDto signup(@Valid UserRegReqDto reqDto) {
         if (isEmailRegistered(reqDto.getEmail())) {
             throw new DuplicateResourceException(ErrorCode.EXIST_EMAIL);
