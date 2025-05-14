@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String combinedKey) throws UsernameNotFoundException {
         String[] parts = combinedKey.split(DELIMETER);
         String email = parts[0];
-        String provider = !parts[1].isBlank() ? parts[1] : AUTH_PROVIDER_DEFAULT;
+        String provider = parts.length > 1? parts[1] : AUTH_PROVIDER_DEFAULT;
         return new CustomUserDetails(userRepository.findByEmailAndAuthProvider(email, provider)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.USER_NOT_FOUND)));
     }
