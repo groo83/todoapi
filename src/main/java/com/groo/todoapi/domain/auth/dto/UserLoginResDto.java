@@ -14,10 +14,8 @@ import lombok.NoArgsConstructor;
 public class UserLoginResDto {
     private String nickname;
     private String email;
-    private String grantType;
     private String accessToken;
-    private String refreshToken;
-    private Long accessTokenExpiresIn;
+    private String grantType;
 
     public static UserLoginResDto from(TokenDto dto, User user) {
         return UserLoginResDto.builder()
@@ -25,8 +23,6 @@ public class UserLoginResDto {
                 .nickname(user.getNickname())
                 .grantType(dto.getGrantType())
                 .accessToken(dto.getAccessToken())
-                .refreshToken(dto.getRefreshToken())
-                .accessTokenExpiresIn(dto.getAccessTokenExpiresIn())
                 .build();
     }
 }
