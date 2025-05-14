@@ -1,4 +1,4 @@
-package com.groo.todoapi.auth;
+package com.groo.todoapi.domain.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groo.todoapi.domain.auth.dto.UserLoginReqDto;
@@ -40,7 +40,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    void singinWithUserRole() throws Exception {
+    void singinWithUserRole_success() throws Exception {
         UserLoginReqDto reqDto = new UserLoginReqDto("testuser@test.com", "1234");
 
         mockMvc.perform(post("/users/login")

@@ -1,4 +1,4 @@
-package com.groo.todoapi.user;
+package com.groo.todoapi.domain.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,14 +48,14 @@ public class UserControllerTest {
 
     @Test
     public void signupWithJsonDataExistEmail() throws Exception {
-        UserRegReqDto reqDto = new UserRegReqDto("test@gmail.com", "test", "password");
+        UserRegReqDto reqDto = new UserRegReqDto("testExist@test.com", "test", "password");
 
         mockMvc.perform(post("/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reqDto)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data.email").value("test@gmail.com"))
+                .andExpect(jsonPath("$.data.email").value("testExist@test.com"))
                 .andExpect(jsonPath("$.data.nickname").value("test"));
 
 

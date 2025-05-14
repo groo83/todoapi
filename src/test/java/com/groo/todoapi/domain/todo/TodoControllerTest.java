@@ -1,4 +1,4 @@
-package com.groo.todoapi.todo;
+package com.groo.todoapi.domain.todo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groo.todoapi.domain.todo.dto.TodoReqDto;
