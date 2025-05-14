@@ -16,6 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
+import static com.groo.todoapi.security.util.SecurityUtil.getCurrentUserEmailAndProvider;
+
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -25,8 +29,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
+    public User findByEmailAndAuthProvider(String email, String provider) {
+        return userRepository.findByEmailAndAuthProvider(email, provider)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.USER_NOT_FOUND));
     }
 
@@ -40,19 +44,17 @@ public class UserService {
         return UserResDto.fromEntity(user);
     }
 
-    public boolean isEmailRegistered(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    public UserResDto getCurrentUser(String email) {
-        User user = userRepository.findByEmail(email)
+    public UserResDto getCurrentUser() {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userRepository.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"))
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.USER_NOT_FOUND));
         return UserResDto.fromEntity(user);
     }
 
     @Transactional
-    public UserResDto updateCurrentUser(String email, UserUpdateReqDto dto) {
-        User user = userRepository.findByEmail(email)
+    public UserResDto updateCurrentUser(UserUpdateReqDto dto) {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userRepository.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"))
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.USER_NOT_FOUND));
 
         updateNickname(dto, user);
@@ -62,6 +64,18 @@ public class UserService {
         userRepository.save(user);
 
         return UserResDto.fromEntity(user);
+    }
+
+    @Transactional
+    public void deleteCurrentUser() {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
+        userRepository.delete(user);
+    }
+
+    public boolean isEmailRegistered(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     private static void updateNickname(UserUpdateReqDto dto, User user) {
@@ -87,11 +101,5 @@ public class UserService {
 
         String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
         user.updatePassword(encodedNewPassword);
-    }
-
-    @Transactional
-    public void deleteCurrentUser(String email) {
-        User user = findByEmail(email);
-        userRepository.delete(user);
     }
 }

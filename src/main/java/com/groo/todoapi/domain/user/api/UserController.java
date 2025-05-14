@@ -9,8 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -30,28 +28,18 @@ public class UserController {
     @GetMapping("/me")
     @ResponseStatus(value = HttpStatus.OK)
     public DataResponse<UserResDto> getMyInfo() {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(userService.getCurrentUser(email));
+        return DataResponse.create(userService.getCurrentUser());
     }
 
     @PutMapping("/me")
     public DataResponse<UserResDto> updateMyInfo(@RequestBody UserUpdateReqDto dto) {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(userService.updateCurrentUser(email, dto));
+        return DataResponse.create(userService.updateCurrentUser(dto));
 
     }
 
     @DeleteMapping("/me")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteMyInfo() {
-        String email = getCurrentUserEmail();
-        userService.deleteCurrentUser(email);
-    }
-
-    // 현재 사용자 이메일 추출용 메서드
-    private String getCurrentUserEmail() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("auth.getName() = {}", auth.getName());
-        return auth.getName(); // JWT 기반이면 이메일이 들어있어야 함
+        userService.deleteCurrentUser();
     }
 }

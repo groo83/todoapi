@@ -9,8 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,46 +24,34 @@ public class TodoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public DataResponse<TodoResDto> createTodo(@Valid @RequestBody TodoReqDto reqDto) {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(todoService.createTodo(email, reqDto));
+        return DataResponse.create(todoService.createTodo(reqDto));
     }
 
     @GetMapping
     public DataResponse<List<TodoResDto>> getMyTodos() {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(todoService.getMyTodos(email));
+        return DataResponse.create(todoService.getMyTodos());
     }
 
     @GetMapping("/{id}")
     public DataResponse<TodoResDto> getTodo(@PathVariable Long id) {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(todoService.getTodo(email, id));
+        return DataResponse.create(todoService.getTodo(id));
     }
 
     @PutMapping("/{id}")
     public DataResponse<TodoResDto> updateTodo(
             @PathVariable Long id,
             @Valid @RequestBody TodoUpdateReqDto reqDto) {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(todoService.updateTodo(email, id, reqDto));
+        return DataResponse.create(todoService.updateTodo(id, reqDto));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTodo(@PathVariable Long id) {
-        String email = getCurrentUserEmail();
-        todoService.deleteTodo(email, id);
+        todoService.deleteTodo(id);
     }
 
     @GetMapping("/search")
     public DataResponse<List<TodoResDto>> searchTodos(@RequestParam String title) {
-        String email = getCurrentUserEmail();
-        return DataResponse.create(todoService.searchTodos(email, title));
-    }
-
-    private String getCurrentUserEmail() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        return auth.getName();
+        return DataResponse.create(todoService.searchTodos(title));
     }
 }

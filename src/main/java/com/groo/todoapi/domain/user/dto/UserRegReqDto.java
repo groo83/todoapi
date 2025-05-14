@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static com.groo.todoapi.security.constants.SecurityConstants.AUTH_PROVIDER_DEFAULT;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,6 +26,7 @@ public class UserRegReqDto {
                 .nickname(this.nickname)
                 .email(this.email)
                 .password(encPassword)
+                .authProvider(AUTH_PROVIDER_DEFAULT)
                 .build();
     }
 }

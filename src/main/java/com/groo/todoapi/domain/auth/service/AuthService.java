@@ -1,8 +1,9 @@
-package com.groo.todoapi.domain.auth;
+package com.groo.todoapi.domain.auth.service;
 
 import com.groo.todoapi.domain.auth.dto.UserLoginReqDto;
 import com.groo.todoapi.domain.auth.dto.UserLoginResDto;
 import com.groo.todoapi.domain.user.service.UserService;
+import com.groo.todoapi.security.constants.SecurityConstants;
 import com.groo.todoapi.security.jwt.TokenDto;
 import com.groo.todoapi.security.jwt.TokenProvider;
 import jakarta.validation.Valid;
@@ -33,6 +34,6 @@ public class AuthService {
         // JWT 토큰 생성
         TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
 
-        return UserLoginResDto.from(tokenDto, userService.findByEmail(reqDto.getEmail()));
+        return UserLoginResDto.from(tokenDto, userService.findByEmailAndAuthProvider(reqDto.getEmail(), SecurityConstants.AUTH_PROVIDER_DEFAULT));
     }
 }

@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.groo.todoapi.security.util.SecurityUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,20 +29,25 @@ public class TodoService {
     private final UserService userService;
 
     @Transactional
-    public TodoResDto createTodo(String email, TodoReqDto reqDto) {
-        User user = userService.findByEmail(email);
+    public TodoResDto createTodo(TodoReqDto reqDto) {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
         return TodoResDto.fromEntity(todoRepository.save(reqDto.toEntity(user)));
     }
 
-    public List<TodoResDto> getMyTodos(String email) {
-        User user = userService.findByEmail(email);
+    public List<TodoResDto> getMyTodos() {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
         return todoRepository.findByUser(user).stream()
                 .map(TodoResDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    public TodoResDto getTodo(String email, Long id) {
-        User user = userService.findByEmail(email);
+    public TodoResDto getTodo(Long id) {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.TODO_NOT_FOUND));
 
@@ -52,8 +60,10 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoResDto updateTodo(String email, Long id, TodoUpdateReqDto reqDto) {
-        User user = userService.findByEmail(email);
+    public TodoResDto updateTodo(Long id, TodoUpdateReqDto reqDto) {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.TODO_NOT_FOUND));
 
@@ -70,8 +80,10 @@ public class TodoService {
     }
 
     @Transactional
-    public void deleteTodo(String email, Long id) {
-        User user = userService.findByEmail(email);
+    public void deleteTodo(Long id) {
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCode.TODO_NOT_FOUND));
 
@@ -83,8 +95,13 @@ public class TodoService {
         todoRepository.delete(todo);
     }
 
-    public List<TodoResDto> searchTodos(String email, String title) {
-        User user = userService.findByEmail(email);
+    public List<TodoResDto> searchTodos(String title) {
+
+        String email = getCurrentUserEmail();
+
+        Map<String, String> authUser = getCurrentUserEmailAndProvider();
+        User user = userService.findByEmailAndAuthProvider(authUser.get("email"), authUser.get("provider"));
+
         return todoRepository.findByUserAndTitleContaining(user, title).stream()
                 .map(TodoResDto::fromEntity)
                 .collect(Collectors.toList());

@@ -21,14 +21,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="email", nullable = false, unique=true)
+    @Column(name="email", nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
     private String nickname;
+
+    @Column(name = "auth_provider", nullable = false)
+    private String authProvider;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -38,10 +40,11 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Builder
-    public User(String email, String password, String nickname) {
+    public User(String email, String password, String nickname, String authProvider) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
+        this.authProvider = authProvider;
     }
 
     public void updateNickName(String nickname) {

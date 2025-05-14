@@ -1,6 +1,7 @@
 package com.groo.todoapi.security.jwt;
 
-import com.groo.todoapi.domain.auth.CustomUserDetailsService;
+import com.groo.todoapi.domain.auth.service.CustomUserDetailsService;
+import com.groo.todoapi.security.constants.SecurityConstants;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -25,9 +26,11 @@ public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
+    private static final String PROVIDERS_KEY = "provider";
     private final long validityAccessTokenInMilliseconds;
     private final long validityRefreshTokenInMilliseconds;
     private CustomUserDetailsService userDetailsService;
+    private static final String DELIMETER = "|";
 
     private final Key key;
 
@@ -44,6 +47,10 @@ public class TokenProvider {
     }
 
     public TokenDto generateTokenDto(Authentication authentication) {
+        return generateTokenDto(authentication, SecurityConstants.AUTH_PROVIDER_DEFAULT);
+    }
+
+    public TokenDto generateTokenDto(Authentication authentication, String authProvider) {
         // 권한들 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -56,6 +63,7 @@ public class TokenProvider {
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())       // payload "sub": "name"
                 .claim(AUTHORITIES_KEY, authorities)        // payload "auth": "ROLE_USER"
+                .claim(PROVIDERS_KEY, authProvider)         // payload "provider": "google" (ex)
                 .setExpiration(accessTokenExpiresIn)        // payload "exp": 151621022 (ex)
                 .signWith(key, SignatureAlgorithm.HS512)    // header "alg": "HS512"
                 .compact();
@@ -97,13 +105,15 @@ public class TokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        // UserDetails 객체 생성이 아닌 조회한 객체를 리턴하도록 수정.
-        // jwt claim에 닉네임 정보를 저장하든 CustomUserDetails를 담기 위해 DB 조회는 한번 필수로 해야함.
-        // DB조회 필수로 해야한다면 보안과 동기화(갱신)을 위해 조회한 객체 저장.
-        // UserDetails principal = new User(claims.getSubject(), "", authorities);
-        UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject());
+        // email과 provider로 User 특정
+        String provider = claims.get("provider", String.class);
+        UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject()+ DELIMETER + provider);
 
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+        authentication.setDetails(provider); // 부가 정보로 provider 저장
+        return authentication;
     }
 
     public boolean validateToken(String token) {
