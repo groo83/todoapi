@@ -19,8 +19,8 @@ spring:
       client:
         registration:
           google:
-            client-id: *****
-            client-secret: *****
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - email
@@ -33,8 +33,8 @@ spring:
             user-name-attribute: sub
 
 jwt:
-  secret: *****
+  secret: ${JWT_SECRET}
   access:
-    expiration: 3600000  # 1 hour
+    expiration: ${JWT_ACCESS_EXPIRATION:3600000}  # 1 hour
   refresh:
-    expiration: 1209600000 # 14일 (ms)
+    expiration: ${JWT_REFRESH_EXPIRATION:1209600000} # 14일 (ms)

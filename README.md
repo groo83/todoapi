@@ -21,7 +21,7 @@
 - JWT 기반 사용자 인증
 - OAuth2 Google 제공
   - 확장 가능하도록 provider 정보 관리
-  - 
+
 ## 실행 방법
 ```shell
 ./gradlew bootRun
